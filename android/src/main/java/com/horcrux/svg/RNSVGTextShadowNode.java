@@ -193,46 +193,7 @@ public class RNSVGTextShadowNode extends RNSVGPathShadowNode {
     }
 
     @Override
-    public int hitTest(Point point, View view, @Nullable Matrix matrix) {
-        Bitmap bitmap = Bitmap.createBitmap(
-            mCanvasWidth,
-            mCanvasHeight,
-            Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(bitmap);
-
-        if (matrix != null) {
-            canvas.concat(matrix);
-        }
-
-        canvas.concat(mMatrix);
-
-        String text = formatText();
-        if (text == null) {
-            return -1;
-        }
-
-        Paint paint = new Paint();
-        clip(canvas, paint);
-        setHitTestFill(paint);
-        drawText(canvas, paint, text);
-
-        if (setHitTestStroke(paint)) {
-            drawText(canvas, paint, text);
-        }
-
-        canvas.setBitmap(bitmap);
-        try {
-            if (bitmap.getPixel(point.x, point.y) != 0) {
-                return view.getId();
-            }
-        } catch (Exception e) {
-            return -1;
-        } finally {
-            bitmap.recycle();
-        }
-        return -1;
-    }
+    public int hitTest(Point point, View view, @Nullable Matrix matrix) { return -1; }
 
 
     @Override

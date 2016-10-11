@@ -21,6 +21,7 @@ import android.graphics.Point;
 import android.graphics.RectF;
 
 import android.graphics.Color;
+import android.graphics.Region;
 import android.view.View;
 
 import com.facebook.common.logging.FLog;
@@ -68,7 +69,6 @@ public class RNSVGPathShadowNode extends RNSVGVirtualNode {
 
     protected Path mPath;
     private float[] mD;
-
     private ArrayList<String> mChangedList;
     private ArrayList<Object> mOriginProperties;
     protected ReadableArray mPropList = new JavaOnlyArray();
@@ -331,37 +331,18 @@ public class RNSVGPathShadowNode extends RNSVGVirtualNode {
 
     @Override
     public int hitTest(Point point, View view, @Nullable Matrix matrix) {
-        Bitmap bitmap = Bitmap.createBitmap(
-            mCanvasWidth,
-            mCanvasHeight,
-            Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(bitmap);
-
+        RectF rectF = new RectF();
+        Path path = new Path(mPath);
         if (matrix != null) {
-            canvas.concat(matrix);
+            path.transform(matrix);
         }
+        path.transform(mMatrix);
+        path.computeBounds(rectF, true);
+        Region region = new Region();
+        region.setPath(path, new Region((int) rectF.left, (int) rectF.top, (int) rectF.right, (int) rectF.bottom));
 
-        canvas.concat(mMatrix);
-
-        Paint paint = new Paint();
-        clip(canvas, paint);
-        setHitTestFill(paint);
-        canvas.drawPath(mPath, paint);
-
-        if (setHitTestStroke(paint)) {
-            canvas.drawPath(mPath, paint);
-        }
-
-        canvas.setBitmap(bitmap);
-        try {
-            if (bitmap.getPixel(point.x, point.y) != 0) {
-                return view.getId();
-            }
-        } catch (Exception e) {
-            return -1;
-        } finally {
-            bitmap.recycle();
+        if (region.contains(point.x, point.y)) {
+            return view.getId();
         }
         return -1;
     }
